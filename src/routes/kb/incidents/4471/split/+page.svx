@@ -14,19 +14,24 @@ signature: v1.eyJzdWIiOiI1MTk0IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYX
 
   const repo = 'https://github.com/ljaworski/mega-s01e03-what-it-shows/issues';
   const issues = { parser: `${repo}/1`, hint: `${repo}/2`, 'one-day-shift': `${repo}/3` };
+  // Engineering update on #4471 (closed 5 Oct). No fix covers the one-day shift.
+  const status = { parser: 'fixed', hint: "won't fix", 'one-day-shift': 'open' };
 </script>
 
 [#4471](/kb/incidents/4471) says one bug: the parser reads day-first dates month first. Read by
 tenant, channel and body, its reports hold three problems with three different fixes.
 Each now has its own ticket.
 
+Engineering closed #4471 on 5 October: `parser` fixed ("fix(dates): parse dd/mm for eu
+locales"), `hint` won't fix (the booking-v3 form is retired).
+
 <Callout kind="warn">
-Fixing the parser alone leaves two of these open. Do not close the tickets below with it.
+Closing #4471 did not close the one-day shift. No fix touched it; its ticket stays open.
 </Callout>
 
 ## The problems
 
-<ProblemTable ticket={4471} {issues} />
+<ProblemTable ticket={4471} {issues} {status} />
 
 - **`parser`**: the shared parser reads every date month first. Our tenants write the day
   first, so day and month swap (7 April → 4 July). App, email and the booking-v2 form.
@@ -35,14 +40,16 @@ Fixing the parser alone leaves two of these open. Do not close the tickets below
   through the booking-v3 form, and a parser fix does not touch it.
 - **`one-day-shift`**: the date moves by one day, or differs per attendee time zone ("Lisbon
   got Tuesday, Toronto got Monday"). A time-zone bug, not a swap. The desk already listed these
-  in `desk-notes.json`; until now they were filed under `parser`.
+  in `desk-notes.json` and filed them under `parser` by tenant, so the parser fix closed them
+  with the rest. Still open.
 
 ## How the reports were placed
 
 - One report per id: the export repeats some rows (`uniqueById`).
 - The cause follows the tenant (`causes.ts`, `locales.ts`), not intake's tag. Intake guesses
   from the reporter's browser and disagrees with the tenant on dozens of reports.
-- The desk's `oneDayMove` notes take a report out of `parser` into `one-day-shift`.
+- Counts follow the desk's own view (its cause table): the desk's `oneDayMove` reports stay
+  under their tenant's cause and get a row of their own as well.
 
 ## Why they were merged
 
