@@ -1,0 +1,52 @@
+---
+layout: runbook
+title: '#4471 split · three problems, not one'
+owner: leon
+status: open
+reviewed: 2026-10-29
+signature: v1.eyJzdWIiOiI1MTk0IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMyNzA0NzYsImV4cCI6MTc5MzM1Njg3Nn0.yQCJJq495bMoJpZHYm20pMmKZVcDpp5b08XT_9W3PH0
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/ljaworski/mega-s01e03-what-it-shows/issues';
+  const issues = { parser: `${repo}/1`, hint: `${repo}/2`, 'one-day-shift': `${repo}/3` };
+</script>
+
+[#4471](/kb/incidents/4471) says one bug: the parser reads day-first dates month first. Read by
+tenant, channel and body, its reports hold three problems with three different fixes.
+Each now has its own ticket.
+
+<Callout kind="warn">
+Fixing the parser alone leaves two of these open. Do not close the tickets below with it.
+</Callout>
+
+## The problems
+
+<ProblemTable ticket={4471} {issues} />
+
+- **`parser`**: the shared parser reads every date month first. Our tenants write the day
+  first, so day and month swap (7 April → 4 July). App, email and the booking-v2 form.
+- **`hint`**: booking-v3 prints `MM/DD/YYYY` under its date field. People type month first,
+  as told; the form reads the tenant's way, day first. Same symptom as `parser`, but only
+  through the booking-v3 form, and a parser fix does not touch it.
+- **`one-day-shift`**: the date moves by one day, or differs per attendee time zone ("Lisbon
+  got Tuesday, Toronto got Monday"). A time-zone bug, not a swap. The desk already listed these
+  in `desk-notes.json`; until now they were filed under `parser`.
+
+## How the reports were placed
+
+- One report per id: the export repeats some rows (`uniqueById`).
+- The cause follows the tenant (`causes.ts`, `locales.ts`), not intake's tag. Intake guesses
+  from the reporter's browser and disagrees with the tenant on dozens of reports.
+- The desk's `oneDayMove` notes take a report out of `parser` into `one-day-shift`.
+
+## Why they were merged
+
+Triage merges on subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)). A
+subject says "wrong day"; it does not say which way in or which form. Three causes, one subject.
+
+<RenderStamp {signature} />

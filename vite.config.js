@@ -9,7 +9,7 @@ export default {
     sveltekit({
       extensions: ['.svelte', '.svx'],
       preprocess: [mdsvex({ extensions: ['.svx'], layout: { runbook: fileURLToPath(new URL('./src/lib/layouts/runbook.svelte', import.meta.url)) } })],
-      adapter: adapter(),
+      adapter: adapter({ pages: 'rendered', assets: 'rendered' }),
       prerender: { entries: ['/kb'] },
     }),
   ],
